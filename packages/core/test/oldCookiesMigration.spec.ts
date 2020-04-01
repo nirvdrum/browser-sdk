@@ -1,11 +1,11 @@
 import { getCookie, SESSION_COOKIE_NAME, setCookie } from '../src'
 import { cacheCookieAccess } from '../src/cookie'
 import { OLD_LOGS_COOKIE_NAME, OLD_RUM_COOKIE_NAME, tryOldCookiesMigration } from '../src/oldCookiesMigration'
-import { EXPIRATION_DELAY } from '../src/sessionManagement'
+import { SESSION_EXPIRATION_DELAY } from '../src/sessionManagement'
 
 describe('old cookies migration', () => {
   it('should not touch current cookie', () => {
-    setCookie(SESSION_COOKIE_NAME, 'id=abcde&rum=0&logs=1', EXPIRATION_DELAY)
+    setCookie(SESSION_COOKIE_NAME, 'id=abcde&rum=0&logs=1', SESSION_EXPIRATION_DELAY)
 
     tryOldCookiesMigration(cacheCookieAccess(SESSION_COOKIE_NAME))
 
@@ -13,9 +13,9 @@ describe('old cookies migration', () => {
   })
 
   it('should migrate old cookies format to current format', () => {
-    setCookie(SESSION_COOKIE_NAME, 'abcde', EXPIRATION_DELAY)
-    setCookie(OLD_LOGS_COOKIE_NAME, '1', EXPIRATION_DELAY)
-    setCookie(OLD_RUM_COOKIE_NAME, '0', EXPIRATION_DELAY)
+    setCookie(SESSION_COOKIE_NAME, 'abcde', SESSION_EXPIRATION_DELAY)
+    setCookie(OLD_LOGS_COOKIE_NAME, '1', SESSION_EXPIRATION_DELAY)
+    setCookie(OLD_RUM_COOKIE_NAME, '0', SESSION_EXPIRATION_DELAY)
 
     tryOldCookiesMigration(cacheCookieAccess(SESSION_COOKIE_NAME))
 
@@ -27,7 +27,7 @@ describe('old cookies migration', () => {
   })
 
   it('should migrate single old cookie to new format', () => {
-    setCookie(OLD_RUM_COOKIE_NAME, '0', EXPIRATION_DELAY)
+    setCookie(OLD_RUM_COOKIE_NAME, '0', SESSION_EXPIRATION_DELAY)
 
     tryOldCookiesMigration(cacheCookieAccess(SESSION_COOKIE_NAME))
 

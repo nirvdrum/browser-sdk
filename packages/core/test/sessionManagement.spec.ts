@@ -1,11 +1,14 @@
+import { ONE_HOUR } from '../src'
 import { cacheCookieAccess, COOKIE_ACCESS_DELAY, CookieCache, getCookie, setCookie } from '../src/cookie'
 import {
+  EXPIRATION_DELAY,
   Session,
   SESSION_COOKIE_NAME,
   SESSION_EXPIRATION_DELAY,
   SESSION_TIME_OUT_DELAY,
   startSessionManagement,
   stopSessionManagement,
+  VISIBILITY_CHECK_DELAY,
 } from '../src/sessionManagement'
 import { isIE } from '../src/specHelper'
 
@@ -91,10 +94,11 @@ describe('startSessionManagement', () => {
   })
 
   afterEach(() => {
-    // flush pending callbacks to avoid random failures
-    jasmine.clock().tick(new Date().getTime())
-    jasmine.clock().uninstall()
+    // remove intervals first
     stopSessionManagement()
+    // flush pending callbacks to avoid random failures
+    jasmine.clock().tick(ONE_HOUR)
+    jasmine.clock().uninstall()
   })
 
   describe('cookie management', () => {
@@ -341,5 +345,26 @@ describe('startSessionManagement', () => {
 
       document.dispatchEvent(new CustomEvent('click'))
     })
+  })
+
+  fit('should expand session on visibility', () => {
+    let visibility: VisibilityState = 'visible'
+
+    const session = startSessionManagement(
+      FIRST_SESSION_TYPE_KEY,
+      () => ({
+        isTracked: true,
+        type: FakeSessionType.TRACKED,
+      }),
+      true,
+      () => visibility
+    )
+
+    jasmine.clock().tick(3 * VISIBILITY_CHECK_DELAY)
+    visibility = 'hidden'
+    expect(session.getId).toBeDefined()
+
+    jasmine.clock().tick(EXPIRATION_DELAY - 2 * VISIBILITY_CHECK_DELAY)
+    expect(getCookie(SESSION_COOKIE_NAME)).toBeUndefined()
   })
 })
